@@ -1,6 +1,6 @@
 AjaxPars.php
 ========
-![PHP version](https://img.shields.io/badge/PHP->=v5.6-green.svg?php=5.6)    [![GitHub release](https://img.shields.io/badge/releases-1.1.4-blue.svg)](https://github.com/indeximstudio/AjaxPars/releases)
+![PHP version](https://img.shields.io/badge/PHP->=v5.6-green.svg?php=5.6)    [![GitHub release](https://img.shields.io/badge/releases-1.2.0-blue.svg)](https://github.com/indeximstudio/AjaxPars/releases)
 
 Класс для создания переборов любых данных посредством ajax c лёгкой реализацией.
 
