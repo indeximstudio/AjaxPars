@@ -1,0 +1,16 @@
+{
+  "name": "krs/ajaxpars",
+  "description": "Class for processing data with ajax",
+  "type": "library",
+  "license": "GPL",
+  "authors": [
+    {
+      "name": "Ruslan Kovalchuk",
+      "email": "myindexlike@gmail.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "psr-4": {}
+  }
+}
