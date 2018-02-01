@@ -2,4 +2,5 @@
 .gitignore
 .idea/
 
-/vendor/
+composer.lock
+vendor
