@@ -2,9 +2,9 @@
 
 /**
  * AjaxPars
- * release 1.2.0
+ * release 1.2.4
  */
-namespace KRS\AjaxPars;
+namespace Indeximstudio\KRS\AjaxPars;
 
 if (!defined('MODX_BASE_PATH')) {
     die('What are you doing? Get out of here!');
