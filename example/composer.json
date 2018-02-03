@@ -1,0 +1,28 @@
+{
+  "name": "indeximstudio/ajaxpars_example",
+  "type": "project",
+  "description": "ajaxpars example",
+  "keywords": [
+    "ajax",
+    "pars"
+  ],
+  "homepage": "https://github.com/indeximstudio/AjaxPars",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ruslan Kovalchuk",
+      "email": "info@indeximstudio.com",
+      "homepage": "http://indeximstudio.com/en/index.html",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.6.0",
+    "indeximstudio/ajaxpars": "1.2.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Indeximstudio\\AjaxPars\\": ""
+    }
+  }
+}
