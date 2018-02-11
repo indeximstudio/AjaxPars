@@ -1,146 +1,199 @@
 <?php
-
-/**
- * AjaxPars
- * release 1.2.5
- */
 namespace Indeximstudio\AjaxPars;
 
 if (!defined('MODX_BASE_PATH')) {
     die('What are you doing? Get out of here!');
 }
 
+/**
+ * Class AjaxPars
+ * @package Indeximstudio\AjaxPars
+ * release 2.0.1
+ *
+ * @property string $id уникальный номер парсинга
+ * @property integer $delay задержка в мс
+ * @property string $ajaxPath ссылка на обработчик формы
+ * @property array $data массив для передачи данных для работы в момет создания екземпляра класса
+ * @property integer $flow потоки (сколько раз выполнить метод getAction за одну итерацию)
+ * @property boolean $start
+ * @property integer $countIterations сколько раз должен повториться скрипт
+ * @property integer $debug Режим отладки (вывод информации в консоль)
+ * 0 - отключен, 1 - краткая информация, 2 - полная информация
+ */
 abstract class AjaxPars
 {
-    protected $id;
-    private $delay;
-    private $ajaxPath;
-    protected $data;
-    public $flow;
-    private $start;
-    protected $countIterations;
+    /**
+     * @var string
+     */
+    public $id;
+    /**
+     * @var int
+     */
+    public $delay = 1000;
+    /**
+     * @var string
+     */
+    public $ajaxPath = '';
+    /**
+     * @var array
+     */
+    public $data = [];
+    /**
+     * @var int
+     */
+    public $flow = 1;
+    /**
+     * @var bool
+     */
+    public $start;
+    /**
+     * @var integer
+     */
+    public $debug = 0;
+    /**
+     * @var int
+     */
+    private $countIterations;
 
     /**
-     * ajaxPars constructor.
-     *
-     * @param $id - уникальный номер парсинга
-     * @param $delay - задержка в мс
-     * @param $ajaxPath - ссылка на обработчик
-     * @param array $data - данные
-     * @param integer $flow - потоки
+     * AjaxPars constructor.
+     * @param string $id
      */
-    function __construct($id, $delay = 1000, $ajaxPath = '', array $data = array(), $flow = 1)
+    function __construct($id)
     {
-        $this->id = $id;
-        $this->delay = $delay;
-        $this->ajaxPath = $ajaxPath;
-        $this->data = $data;
-        $this->flow = $flow;
-
-        $this->get_data_from_session();
-        $this->countIterations = $this->getCountIterations();
+        if (is_string($id) && trim($id) != '') {
+            $this->id = $id;
+            return $this;
+        }
+        return false;
     }
 
     /**
-     * получение количества итераций
+     * Получает количество итераций
      * @return integer
      */
-    abstract function getCountIterations();
+    abstract protected function getCountIterations();
 
     /**
-     * выполнение действий С полученными данными
+     * Выполнение действий с полученными данными
      * @return string
      */
-    abstract function getAction();
+    abstract protected function getAction();
 
     /**
-     * Сохраняем нужные парамтеры в сессию
-     * и обновляем сессию, если данные были переданы
+     * Создается в дочернем классе для получения необходимой информации о нем
+     * Передает его имя и путь к файлу в этот класс, чтоб занести в сессию
+     *
+     * ВНИМАНИЕ!!!
+     * Если вам нужно расширить функционал етого метода в дочернем классе,
+     * не забудьте вызвать метод transferThisFileInfo()
+     * и передать в него константы __CLASS__ и __FILE__
      */
-    private function get_data_from_session()
-    {
-        if (isset($this->data) and count($this->data) != 0) {
-            $_SESSION['parsing'][$this->id]['data'] = $this->data;
-        } elseif (isset($_SESSION['parsing'][$this->id]['data']) and count($_SESSION['parsing'][$this->id]['data']) > 0) {
-            $this->data = $_SESSION['parsing'][$this->id]['data'];
-        }
-
-        if (isset($this->flow) and $this->flow != '') {
-            $_SESSION['parsing'][$this->id]['flow'] = $this->flow;
-        } elseif (isset($_SESSION['parsing'][$this->id]['flow']) and $_SESSION['parsing'][$this->id]['flow'] != '') {
-            $this->flow = $_SESSION['parsing'][$this->id]['flow'];
-        }
-    }
+    abstract protected function communicationWithParent();
 
     /**
-     * получение процентов выполнения
-     * @return integer
+     * Вычисляет сколько процентов осталось до конца программы
+     * @return integer|float
      */
-    protected function getValue()
+    protected function getProcessPercent()
     {
         if ($this->countIterations > 0) {
-            $_SESSION['parsing'][$this->id]['tekyshiy'] = $_SESSION['parsing'][$this->id]['tekyshiy'] + 1;
-            $_SESSION['parsing'][$this->id]['procent'] = $_SESSION['parsing'][$this->id]['tekyshiy'] * 100 / $this->countIterations;
-            $value = number_format($_SESSION['parsing'][$this->id]['procent'], 2, '.', '');;
+            $this->setSessionParam(
+                'current',
+                $this->getSessionParam('current') + 1
+            );
+            $this->setSessionParam(
+                'percent',
+                $this->getSessionParam('current') * 100 / $this->countIterations
+            );
+            $percent = number_format(
+                $this->getSessionParam('percent'),
+                2,
+                '.',
+                ''
+            );
         } else {
-            $value = 100;
+            $percent = 100;
         }
-        return $value;
+        return $percent;
     }
 
-
     /**
-     * вычисление и вывод данных о текущей операции
+     * Вычисляет и выводит данные о текущей операции
      * @return string
      */
     protected function ajaxTime()
     {
-        $time_start = isset($_SESSION['parsing'][$this->id]['start']) ? $_SESSION['parsing'][$this->id]['start'] : 0;
-        $ostalos = $this->countIterations - $_SESSION['parsing'][$this->id]['tekyshiy'];
+        $time_start = ($this->getSessionParam('start_time') !== false) ? $this->getSessionParam('start_time') : 0;
+        $ostalos = $this->countIterations - $this->getSessionParam('current');
 
         if ($time_start == 0) {
-            $_SESSION['parsing'][$this->id]['time'] = array();
+            $this->setSessionParam('time', []);
             $ostalos_time_min = '';
         } else {
-            if (count($_SESSION['parsing'][$this->id]['time']) > 5) {
-                $_SESSION['time'] = array();
+            if (is_array($this->getSessionParam('time')) && count($this->getSessionParam('time')) > 5) {
+                $this->setSessionParam('time', []);
             }
             $time_stop = microtime(TRUE);
             $time = $time_stop - $time_start;
 
             $_SESSION['parsing'][$this->id]['time'][] = $time;
             $sr = 0;
-            if (is_array($_SESSION['parsing'][$this->id]['time'])) {
-                $sr = array_sum($_SESSION['parsing'][$this->id]['time']) / count($_SESSION['parsing'][$this->id]['time']);
+            if (is_array($this->getSessionParam('time'))) {
+                $sr = array_sum($this->getSessionParam('time')) / count($this->getSessionParam('time'));
             }
 
-            $ostalos_time = ($ostalos * $sr) / $this->flow;;
-            $ostalos_time_min = sprintf('%02d:%02d:%02d', $ostalos_time / 3600, ($ostalos_time % 3600) / 60, ($ostalos_time % 3600) % 60);
+            $ostalos_time = ($ostalos * $sr) / $this->flow;
+            $ostalos_time_min = sprintf(
+                '%02d:%02d:%02d',
+                $ostalos_time / 3600,
+                ($ostalos_time % 3600) / 60,
+                ($ostalos_time % 3600) % 60
+            );
         }
-        $_SESSION['parsing'][$this->id]['start'] = microtime(true);
+        $this->setSessionParam('start_time', microtime(true));
 
-        return '<br>processed items = ' . $ostalos . '/' . $this->countIterations . '<br>
-                    need time = ' . $ostalos_time_min . ' <br>
-                    current = ' . ($_SESSION['parsing'][$this->id]['tekyshiy'] + $this->flow) . ' ';
+        return '<br>items left/total= ' . $ostalos . '/' . $this->countIterations . '<br>
+                    time left = ' . $ostalos_time_min . ' <br>
+                    current = ' . ($this->getSessionParam('current') + $this->flow) . ' ';
     }
 
     /**
-     * запуск парсинга
+     * Сохраняет параметры в сессию
      */
-    public function StartPars()
+    public function setParams()
     {
-        $this->start = 1;
-        $_SESSION['parsing'][$this->id]['tekyshiy'] = 0;
-        $_SESSION['parsing'][$this->id]['vsego'] = '';
-        $_SESSION['parsing'][$this->id]['start'] = 0;
+        $this->sessionClear();
+        $this->setDebug();
+
+        $this->setSessionParam('on', true);
+        $this->setSessionParam('current', 0);
+        $this->setSessionParam('start_time', 0);
+        $this->setSessionParam('data', $this->data);
+        $this->setSessionParam('flow', $this->flow);
+
+        $this->setSessionParam(
+            'count_iterations',
+            $this->getCountIterationsWp()
+        );
+
+        if (trim($this->ajaxPath) == '') {
+            $this->communicationWithParent();
+            $this->ajaxPath = $this->genDefaultAjaxFilePath();
+        }
     }
 
     /**
-     * остановка карсинга
+     * остановка парсинга
      */
     public function StopPars()
     {
-        $this->start = 0;
+        $this->setSessionParam('on', false);
+    }
+
+    public function sessionClear()
+    {
+        unset($_SESSION['parsing'][$this->id]);
     }
 
     /**
@@ -149,12 +202,22 @@ abstract class AjaxPars
      */
     public function getValueJson()
     {
-        $out['text'] = $this->ajaxTime();
+        $this->data = $this->getSessionParam('data');
+        $this->flow = $this->getSessionParam('flow');
+        $this->start = $this->getSessionParam('start_time');
+        $this->countIterations = $this->getSessionParam('count_iterations');
+
+        $data['current'] = $this->getSessionParam('current');
+        $data['process_info'] = $this->ajaxTime();
         for ($x = 0; $x < $this->flow; $x++) {
-            $out['value'] = $this->getValue();
-            $out['test'] = $this->getAction();
+            $data['process_message'] = $this->getAction();
+            if ($this->getSessionParam('on')) {
+                $data['percent'] = $this->getProcessPercent();
+            } else {
+                $data['percent'] = 100;
+            }
         }
-        return json_encode($out);
+        return json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -163,7 +226,8 @@ abstract class AjaxPars
      */
     public function getProgress()
     {
-        $p = '<div class="col-md-6" >
+        $p = '
+           
                 <div class="form-group" >
                     <label for="categories" > Прогрес</label >
                     <div class="progress" id = "status_bar_item_' . $this->id . '" style = "display:none;" >
@@ -171,91 +235,172 @@ abstract class AjaxPars
                     </div >
                 </div >
                 <br />
-                <div id = "statys_' . $this->id . '" ></div >
-                <div id = "test_' . $this->id . '" ></div >
-              </div >';
+                <div class="form-group" id = "statys_' . $this->id . '" ></div >
+                <div class="form-group" >
+                    <pre class="pre-scrollable"><code id = "test_' . $this->id . '" ></code ></pre>
+                </div>
+            
+        ';
         return $p;
     }
 
     /**
-     * перевод данных из пост формы в параметры для отправки по ajax
-     * @return string
-     */
-    private function post_to_value()
-    {
-        $li = array();
-        if (isset($_POST) and count($_POST) > 0) {
-            foreach ($_POST as $key => $value) {
-                if ($value != '' and $key != '') {
-                    $li[] = $key . ":'" . $value . "'";
-                }
-            }
-        }
-        $out = implode(",", $li);
-        return $out;
-    }
-
-    /**
+     * Формирует и возвращает JavaScript c Ajax запросом
      * @return string
      */
     public function getScript()
     {
-        if ($this->start == 1) {
-            $start = ' doAjax();';
-        } else {
-            $start = '';
-        }
-
-
-        $js = "
-        <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js'></script>
-        <script type='text/javascript'>
-            $(function () {
-                " . $start . "
-                function doAjax() {
-                    setTimeout(function () {
-                        var url = '" . $this->ajaxPath . "';
-                        var data = {" . $this->post_to_value() . "};
-                $.ajax({
-                    type: 'POST',
-                    url: url,
-                    data: data,
-                    success: function (sample) {
-                    console.log(sample);
-                    
-                           try {
-                                var obj = jQuery.parseJSON(sample);
-                                $('#statys_" . $this->id . "').html(obj.text);
-                                $('#test_" . $this->id . "').html(obj.test);
-                                if (obj.value >= 100) {
-                                    obj.value = 100;
-                                }
-                                $('#status_bar_item_" . $this->id . "').show();
-                                $('#status_bar_item_" . $this->id . " .progress-bar').attr('aria-valuenow', obj.value + '%');
-                                $('#status_bar_item_" . $this->id . " .progress-bar').width(obj.value + '%');
-                                $('#status_bar_item_" . $this->id . " .progress-bar').html(obj.value + '%');
-    
-                                console.log('load " . $this->id . " ' + obj.value + '%');
-                                if (obj.value >= 100) {
-                                    obj.value = 100;
-                                    $('#status_bar_item_" . $this->id . " .progress-bar').removeClass('progress-bar-striped active');
-                                }
-                                else {
-                                    doAjax();
-                                }
-                             } catch (err) {
-                                doAjax();
-                            }
-                        },
-                    error: function (sample) {
-                            console.log('error " . $this->id . " '.sample);
-                            doAjax();
-                        }
+        $write_debug = $this->getDebug();
+        return "
+            <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js'></script>
+            <script type='text/javascript'>
+            $(function() {
+                var form = '#form" . $this->id . "';
+                $(form).submit(function(e) {
+                    doAjax" . $this->id . "();
+                    e.preventDefault(); 
                 });
-            }, " . $this->delay . ");
+                
+                function doAjax" . $this->id . "() {
+                    setTimeout(function() {
+                        var ajax = $.ajax({
+                            type: 'POST',
+                            url: location.origin + '" . $this->ajaxPath . "',
+                            data: $(form).serialize(),
+                            success: function (sample) {
+                                " . $write_debug . "
+                                try {
+                                    obj = jQuery.parseJSON(sample);
+                                    $('#statys_" . $this->id . "').html(obj.process_info);
+                                    $('#test_" . $this->id . "').html(obj.process_message);
+                                    if (obj.percent >= 100) {
+                                        obj.percent = 100;
+                                    }
+                                    $('#status_bar_item_" . $this->id . "').show();
+                                    $('#status_bar_item_" . $this->id . " .progress-bar').attr('aria-valuenow', obj.percent + '%');
+                                    $('#status_bar_item_" . $this->id . " .progress-bar').width(obj.percent + '%');
+                                    $('#status_bar_item_" . $this->id . " .progress-bar').html(obj.percent + '%');
+                            
+                                    if (obj.percent >= 100) {
+                                        obj.percent = 100;
+                                        $('#status_bar_item_" . $this->id . " .progress-bar').removeClass('progress-bar-striped active');
+                                        ajax.abort();
+                                    } else {
+                                        doAjax" . $this->id . "();
+                                    }
+                                } catch (err) {
+                                    doAjax" . $this->id . "();
+                                }
+                            },
+                            error: function (sample) {
+                                console.log('error " . $this->id . " '.sample);
+                                doAjax" . $this->id . "();
+                            }
+                        });
+                    }, " . $this->delay . ");
                 }
             });
-</script>";
-        return $js;
+            </script>
+        ";
+    }
+
+    /**
+     * Получает имя дочернего класса и путь к файлу с ним и заносит в базу
+     * @param string $class_name
+     * @param string $class_path
+     */
+    protected function transferThisFileInfo($class_name, $class_path)
+    {
+        $this->setSessionParam('className', $class_name);
+        $this->setSessionParam('classPath', $this->replaceReverseSlashes($class_path));
+    }
+
+    /**
+     * Заменяет обратные слеши на простые
+     * Они не нравятся JavaScript
+     * @param string $str
+     * @return string
+     */
+    protected function replaceReverseSlashes($str)
+    {
+        return str_replace('\\', '/', $str);
+    }
+
+    /**
+     * Формирует путь к стандартному файлу ajax относительно корня админки
+     * @return string
+     */
+    private function genDefaultAjaxFilePath()
+    {
+        return '/' . stristr($this->replaceReverseSlashes(__DIR__), 'assets') . '/' . 'ajax.php?id=' . $this->id . '&modx_manager_path=' . MODX_BASE_PATH . 'index.php';
+    }
+
+    /**
+     * Получает количество итераций
+     * @return bool|int getCountIterations
+     */
+    private function getCountIterationsWp()
+    {
+        // Если есть в сесси - получаем
+        if ($this->getSessionParam('count_iterations') > 0) {
+            $count_iterations = $this->getSessionParam('count_iterations');
+            // иначе получаем количество в дочернем классе и заносим в сессию
+        } else {
+            $count_iterations = $this->getCountIterations();
+            $this->setSessionParam('count_iterations', $count_iterations);
+        }
+        return $count_iterations;
+    }
+
+    /**
+     * Заносит данные в сессию
+     * @param string $key
+     * @param mixed $value
+     */
+    protected function setSessionParam($key, $value)
+    {
+        $_SESSION['parsing'][$this->id][$key] = $value;
+    }
+
+    protected function getSessionParam($key)
+    {
+        return (isset($_SESSION['parsing'][$this->id][$key]))
+        ? $_SESSION['parsing'][$this->id][$key]
+            : false;
+    }
+
+    /**
+     * Устанавливает параметр отладки
+     */
+    private function setDebug()
+    {
+        switch ($this->debug) {
+            case 0:
+                $this->debug = 0;
+                break;
+            case 1:
+                $this->debug = 1;
+                break;
+            default:
+                $this->debug = 0;
+        }
+    }
+
+    /**
+     * В javascript подставляет тип вывода информации в консоли
+     * @return string
+     */
+    private function getDebug()
+    {
+        switch ($this->debug) {
+            case 0:
+                return '';
+                break;
+            case 1:
+                return "console.log('(" . $this->id . ") ' + sample);";
+                break;
+            default:
+                return '';
+        }
     }
 }
