@@ -103,7 +103,7 @@ abstract class AjaxPars
             $ostalos_time_min = '';
         } else {
             if (count($_SESSION['parsing'][$this->id]['time']) > 5) {
-                $_SESSION['time'] = array();
+                $_SESSION['parsing'][$this->id]['time'] = array();
             }
             $time_stop = microtime(TRUE);
             $time = $time_stop - $time_start;
