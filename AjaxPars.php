@@ -81,7 +81,7 @@ abstract class AjaxPars
         if ($this->countIterations > 0) {
             $_SESSION['parsing'][$this->id]['tekyshiy'] = $_SESSION['parsing'][$this->id]['tekyshiy'] + 1;
             $_SESSION['parsing'][$this->id]['procent'] = $_SESSION['parsing'][$this->id]['tekyshiy'] * 100 / $this->countIterations;
-            $value = number_format($_SESSION['parsing'][$this->id]['procent'], 2, '.', '');;
+            $value = number_format($_SESSION['parsing'][$this->id]['procent'], 2, '.', '');
         } else {
             $value = 100;
         }
@@ -114,7 +114,7 @@ abstract class AjaxPars
                 $sr = array_sum($_SESSION['parsing'][$this->id]['time']) / count($_SESSION['parsing'][$this->id]['time']);
             }
 
-            $ostalos_time = ($ostalos * $sr) / $this->flow;;
+            $ostalos_time = ($ostalos * $sr) / $this->flow;
             $ostalos_time_min = sprintf('%02d:%02d:%02d', $ostalos_time / 3600, ($ostalos_time % 3600) / 60, ($ostalos_time % 3600) % 60);
         }
         $_SESSION['parsing'][$this->id]['start'] = microtime(true);
