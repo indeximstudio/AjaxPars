@@ -48,7 +48,7 @@ abstract class AjaxPars
     abstract function getCountIterations();
 
     /**
-     * выполнение действий С полученными данными
+     * Выполнение действий С полученными данными
      * @return string
      */
     abstract function getAction();
