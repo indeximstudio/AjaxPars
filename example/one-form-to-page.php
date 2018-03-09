@@ -9,12 +9,12 @@
 /**
  * Подключение стилей (для примера отображения формы и полосы прогреса)
  */
-//echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">';
+echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">';
 
 /**
  * Подключение автозагрузчика
  */
-include_once __DIR__ . '/vendor/autoload.php';
+include_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Подключаем файл с классом
@@ -24,7 +24,7 @@ include_once __DIR__ . '/vendor/autoload.php';
  * или подключите класс с помощью include или require
  */
 
-//use ExampleNamespace\classes\SubsidiaryAjaxPars;
+use Indeximstudio\AjaxPars\example\classes;
 
 // или
 //include_once 'classes/SubsidiaryAjaxPars.php';
@@ -35,14 +35,15 @@ include_once __DIR__ . '/vendor/autoload.php';
  *
  * Указываем идентификатор текущего парсинга
  */
-$one_form = new SubsidiaryAjaxPars('OneExampleID');
+$one_form = new classes\SubsidiaryAjaxPars('OneExampleID');
 /**
  * Параметры парсинга (все параметры описаны в классе)
  */
 // Задержка между запросами
-$one_form->delay = 1000;
+$one_form->delay = 1;
 // За одну итерацию выполнить программу 5 раз
-$one_form->flow = 5;
+$one_form->flow = 1;
+$one_form->debug = 1;
 /**
  * Заносим необходиме для дальнейшей работы данные в сессию
  */

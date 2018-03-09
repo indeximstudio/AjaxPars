@@ -1,5 +1,5 @@
 <?php
-//namespace ExampleNamespace;
+namespace Indeximstudio\AjaxPars\example\classes;
 
 use Indeximstudio\AjaxPars;
 
