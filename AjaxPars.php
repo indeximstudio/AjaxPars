@@ -1,6 +1,8 @@
 <?php
 namespace Indeximstudio\AjaxPars;
 
+use Indeximstudio\CuratorModx\CuratorModx;
+
 if (!defined('MODX_BASE_PATH')) {
     die('What are you doing? Get out of here!');
 }
@@ -20,7 +22,7 @@ if (!defined('MODX_BASE_PATH')) {
  * @property integer $debug Режим отладки (вывод информации в консоль)
  * 0 - отключен, 1 - краткая информация, 2 - полная информация
  */
-abstract class AjaxPars
+abstract class AjaxPars extends CuratorModx
 {
     /**
      * @var string
@@ -61,8 +63,11 @@ abstract class AjaxPars
      */
     function __construct($id)
     {
+        global $modx;
+
         if (is_string($id) && trim($id) != '') {
             $this->id = $id;
+            self::setModx($modx);
             return $this;
         }
         return false;
