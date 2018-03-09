@@ -28,6 +28,10 @@ class SubsidiaryAjaxPars extends AjaxPars\AjaxPars
      * Из базы - делаем запрос на количество
      * Из файла - получаем количество строк
      * Или же просто жестко вписать количество
+     * **************************************
+     * !!! Переменную $modx можно использовать через метод
+     * self::getModx()
+     * **************************************
      * @return int
      */
     protected function getCountIterations()
@@ -41,7 +45,10 @@ class SubsidiaryAjaxPars extends AjaxPars\AjaxPars
 
     /**
      * выполнение действий С полученными данными
-     *
+     * **************************************
+     * !!! Переменную $modx можно использовать через метод
+     * self::getModx()
+     * **************************************
      * @return mixed
      */
     function getAction()
