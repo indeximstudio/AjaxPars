@@ -6,7 +6,7 @@
 global $modx;
 header("Content-type: text/html, charset=utf-8;");
 define('MODX_API_MODE', true);
-require_once 'vendor/autoload.php';
+
 require_once $_GET['modx_manager_path'];
 $modx->db->connect();
 if (empty ($modx->config)) {
