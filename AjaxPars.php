@@ -333,7 +333,7 @@ abstract class AjaxPars
      */
     private function genDefaultAjaxFilePath()
     {
-        return '/' . stristr($this->replaceReverseSlashes(__DIR__), 'assets') . '/' . 'ajax.php?id=' . $this->id . '&modx_manager_path=' . MODX_BASE_PATH . 'index.php';
+        return '/' . stristr($this->replaceReverseSlashes(__DIR__), 'vendor') . '/' . 'ajax.php?id=' . $this->id . '&modx_manager_path=' . MODX_BASE_PATH . 'index.php';
     }
 
     /**
