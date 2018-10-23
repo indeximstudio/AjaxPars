@@ -17,7 +17,8 @@
     }
   ],
   "require": {
-    "php": ">=5.6.0"
+    "php": ">=5.6.0",
+    "indeximstudio/curator-modx" : "1.0.3"
   },
   "autoload": {
     "psr-4": {
