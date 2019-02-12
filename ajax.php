@@ -1,17 +1,14 @@
 <?php
-
+//v3
 //ini_set("display_errors",1);
 //error_reporting(E_ALL);
-
-global $modx;
-header("Content-type: text/html, charset=utf-8;");
 define('MODX_API_MODE', true);
-
-require_once $_GET['modx_manager_path'];
+include_once(dirname(__FILE__) . "/index.php");
 $modx->db->connect();
 if (empty ($modx->config)) {
     $modx->getSettings();
 }
+$modx->invokeEvent("OnWebPageInit");
 
 $session = $_SESSION['parsing'][$_GET['id']];
 include_once 'AjaxPars.php';
