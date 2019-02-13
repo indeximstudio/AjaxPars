@@ -3,7 +3,7 @@
 //ini_set("display_errors",1);
 //error_reporting(E_ALL);
 define('MODX_API_MODE', true);
-include_once(dirname(__FILE__) . "/index.php");
+include_once($_SERVER['DOCUMENT_ROOT'] . "/index.php");
 $modx->db->connect();
 if (empty ($modx->config)) {
     $modx->getSettings();
