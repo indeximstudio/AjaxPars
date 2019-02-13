@@ -208,6 +208,10 @@ abstract class AjaxPars
         $this->start = $this->getSessionParam('start_time');
         $this->countIterations = $this->getSessionParam('count_iterations');
 
+        if ($this->countIterations === false) {
+            $this->countIterations = $this->getCountIterations();
+        }
+
         $data['current'] = $this->getSessionParam('current');
         $data['process_info'] = $this->ajaxTime();
         for ($x = 0; $x < $this->flow; $x++) {
